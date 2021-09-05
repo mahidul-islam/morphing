@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:morphing/app/pages/home/ui/home_ui.dart';
-import 'package:morphing/app/pages/topic_details/ui/topic_details_ui.dart';
 import 'package:morphing/shared/analytics.dart';
 import 'package:morphing/shared/locator.dart';
 
@@ -15,8 +14,6 @@ class RouteGenerator {
     switch (settings.name) {
       case Routes.index:
         return MaterialPageRoute<dynamic>(builder: (_) => HomeUI());
-      case Routes.topic_details:
-        return MaterialPageRoute<dynamic>(builder: (_) => TopicDetailsUI());
 
       default:
         return _route404();
