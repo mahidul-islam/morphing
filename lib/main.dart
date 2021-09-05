@@ -1,7 +1,7 @@
 // import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:morphing/app/history_app.dart';
+import 'package:morphing/app/morphing.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:morphing/app/observer/bloc_observer.dart';
 import 'package:morphing/shared/locator.dart';
@@ -13,7 +13,7 @@ void main() async {
   Bloc.observer = AppBlocObserver();
   await setupLocator();
 
-  runApp(HistoryApp());
+  runApp(MorphingApp());
 }
 
 // For testing the link with firebase.

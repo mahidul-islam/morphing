@@ -13,14 +13,14 @@ import 'package:morphing/shared/navigation_services.dart';
 import 'bloc/notification/notification_bloc.dart';
 import 'bloc/user/user_bloc.dart';
 
-class HistoryApp extends StatefulWidget {
-  const HistoryApp({Key? key}) : super(key: key);
+class MorphingApp extends StatefulWidget {
+  const MorphingApp({Key? key}) : super(key: key);
 
   @override
-  _HistoryAppState createState() => _HistoryAppState();
+  _MorphingAppState createState() => _MorphingAppState();
 }
 
-class _HistoryAppState extends State<HistoryApp> {
+class _MorphingAppState extends State<MorphingApp> {
   late UserBloc _userBloc;
   late NotificationBloc _notificationBloc;
   late BlocProvider<UserBloc> _userBlocProvider;
