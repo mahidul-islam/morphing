@@ -70,7 +70,7 @@ class _MorphingAppState extends State<MorphingApp> {
             locator<AnalyticsService>().getAnalyticsObserver(),
           ],
           onGenerateRoute: RouteGenerator.generateRoute,
-          initialRoute: Routes.index,
+          initialRoute: Routes.register,
           builder: (BuildContext ctx, Widget? child) {
             return Scaffold(
               body: BlocListener<NotificationBloc, NotificationState>(

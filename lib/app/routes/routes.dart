@@ -1,4 +1,5 @@
 class Routes {
   static const String index = '/';
-  static const String topic_details = '$index/topic_details';
+  static const String login = '/login';
+  static const String register = '/register';
 }

@@ -91,14 +91,14 @@ class _HomeUIState extends State<HomeUI> {
   Widget _listTile(int index) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).pushNamed(
-          Routes.topic_details,
-          // arguments: <String, dynamic>{
-          //   'package_id': 1,
-          //   'home_bloc': widget.homeBloc,
-          //   'training_plan': widget.trainingPlan,
-          // },
-        );
+        // Navigator.of(context).pushNamed(
+        //   Routes.topic_details,
+        //   // arguments: <String, dynamic>{
+        //   //   'package_id': 1,
+        //   //   'home_bloc': widget.homeBloc,
+        //   //   'training_plan': widget.trainingPlan,
+        //   // },
+        // );
       },
       child: Container(
         decoration: const BoxDecoration(
