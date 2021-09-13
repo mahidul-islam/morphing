@@ -55,7 +55,7 @@ class _MorphingAppState extends State<MorphingApp> {
       ],
       child: AppLifeCycleObserver(
         child: MaterialApp(
-          title: 'History App Client',
+          title: 'Face Morphing App',
           debugShowCheckedModeBanner: false,
           navigatorKey: locator<NavigationService>().navigatorKey,
           theme: ThemeData(
@@ -70,7 +70,7 @@ class _MorphingAppState extends State<MorphingApp> {
             locator<AnalyticsService>().getAnalyticsObserver(),
           ],
           onGenerateRoute: RouteGenerator.generateRoute,
-          initialRoute: Routes.register,
+          initialRoute: Routes.camera,
           builder: (BuildContext ctx, Widget? child) {
             return Scaffold(
               body: BlocListener<NotificationBloc, NotificationState>(

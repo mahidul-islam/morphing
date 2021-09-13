@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:morphing/app/pages/camera/ui/camera_ui.dart';
 import 'package:morphing/app/pages/home/ui/home_ui.dart';
 import 'package:morphing/app/pages/login/ui/login_ui.dart';
 import 'package:morphing/app/pages/register/ui/register_ui.dart';
@@ -20,7 +21,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => RegisterUI());
       case Routes.login:
         return MaterialPageRoute(builder: (_) => LoginUI());
-
+      case Routes.camera:
+        return MaterialPageRoute(builder: (_) => CameraUI());
       default:
         return _route404();
     }
