@@ -122,11 +122,12 @@ class _CameraUIState extends State<CameraUI> {
       children: <Widget>[
         SizedBox(height: 32),
         Container(
-          width: (MediaQuery.of(context).size.width - 48) / 2,
-          height: ((MediaQuery.of(context).size.width - 48) / 2) * (4 / 3),
+          width: (MediaQuery.of(context).size.width - 48) / 1.5,
+          height: ((MediaQuery.of(context).size.width - 48) / 1.5) * (4 / 3),
           // color: SGColors.,
           child: Image.asset(
-            'assets/image/men1.jpg',
+            // 'assets/image/men1.jpg',
+            'assets/image/ready/sample/${_value.toInt()}.jpg',
             fit: BoxFit.cover,
             // alignment: Alignment.bottomCenter,
           ),
@@ -139,11 +140,12 @@ class _CameraUIState extends State<CameraUI> {
               _value = val;
             });
           },
-          min: 0,
-          max: 50,
+          min: 1,
+          max: 39,
           activeColor: Colors.amberAccent,
           inactiveColor: Colors.amberAccent.withOpacity(0.5),
         ),
+        SizedBox(height: 100),
       ],
     );
   }
@@ -158,7 +160,9 @@ class _CameraUIState extends State<CameraUI> {
           height: ((MediaQuery.of(context).size.width - 48) / 2) * (4 / 3),
           // color: SGColors.,
           child: Image.asset(
-            'assets/image/men1.jpg',
+            // 'assets/image/men1.jpg',
+
+            'assets/image/ready/1.png',
             fit: BoxFit.cover,
             // alignment: Alignment.bottomCenter,
           ),
@@ -184,7 +188,8 @@ class _CameraUIState extends State<CameraUI> {
           height: ((MediaQuery.of(context).size.width - 48) / 2) * (4 / 3),
           // color: SGColors.,
           child: Image.asset(
-            'assets/image/pet1.jpg',
+            // 'assets/image/pet1.jpg',
+            'assets/image/ready/2.jpg',
             fit: BoxFit.cover,
             // alignment: Alignment.bottomCenter,
           ),
