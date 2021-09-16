@@ -3,14 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:morphing/app/bloc/notification/notification_bloc.dart';
 import 'package:morphing/app/pages/camera/bloc/camera_bloc.dart';
-import 'package:morphing/app/pages/home/model/home_model.dart';
-import 'package:morphing/app/pages/register/bloc/register_bloc.dart';
-import 'package:morphing/app/routes/routes.dart';
 import 'package:morphing/shared/util/loader.dart';
 
 class CameraUI extends StatefulWidget {
@@ -20,21 +16,14 @@ class CameraUI extends StatefulWidget {
 
 class _CameraUIState extends State<CameraUI> {
   late CameraBloc _bloc;
-  File? _userSelectedImage, _croppedImageFile;
-  final ImagePicker _picker = ImagePicker();
-  double _value = 5;
-  // late TextEditingController _nameController;
-  // late TextEditingController _emailController;
-  // late TextEditingController _passController;
-  // late TextEditingController _passConfirmController;
+  XFile? _manImageFile;
+  XFile? _petImageFile;
+
+  File? _croppedMenImageFile, _croppedPetImageFile, _tempCropped;
+  double _sliderDefaultValue = 5;
 
   @override
   void initState() {
-    // _nameController = TextEditingController();
-    // _emailController = TextEditingController();
-    // _passController = TextEditingController();
-    // _passConfirmController = TextEditingController();
-
     _bloc = CameraBloc();
     super.initState();
   }
@@ -55,7 +44,6 @@ class _CameraUIState extends State<CameraUI> {
         title: const Text(
           'Face Morphing',
           style: TextStyle(color: Colors.black87),
-          // style: SGTextStyles.pro16darkw600,
         ),
       ),
       backgroundColor: Colors.white,
@@ -73,9 +61,6 @@ class _CameraUIState extends State<CameraUI> {
               // }
             },
             builder: (BuildContext context, CameraState state) {
-              // if (state is RegisterLoadingState) {
-              //   return Loader.circular();
-              // }
               return CustomScrollView(
                 slivers: <Widget>[
                   SliverList(
@@ -91,7 +76,7 @@ class _CameraUIState extends State<CameraUI> {
                             SizedBox(width: 16),
                           ],
                         ),
-                        SizedBox(height: 32),
+                        SizedBox(height: 16),
                         Container(
                             width: MediaQuery.of(context).size.width,
                             height: 2,
@@ -120,30 +105,30 @@ class _CameraUIState extends State<CameraUI> {
   Widget _morphedImage() {
     return Column(
       children: <Widget>[
-        SizedBox(height: 32),
+        SizedBox(height: 16),
         Container(
-          width: (MediaQuery.of(context).size.width - 48) / 1.5,
-          height: ((MediaQuery.of(context).size.width - 48) / 1.5) * (4 / 3),
-          // color: SGColors.,
+          width: (MediaQuery.of(context).size.width - 48) / 1.4,
+          height: ((MediaQuery.of(context).size.width - 48) / 1.4),
           child: Image.asset(
-            // 'assets/image/men1.jpg',
-            'assets/image/ready/sample/${_value.toInt()}.jpg',
+            'assets/image/ready/sample/${_sliderDefaultValue.toInt()}.jpg',
             fit: BoxFit.cover,
-            // alignment: Alignment.bottomCenter,
           ),
         ),
         SizedBox(height: 16),
-        Slider(
-          value: _value,
-          onChanged: (double val) {
-            setState(() {
-              _value = val;
-            });
-          },
-          min: 1,
-          max: 39,
-          activeColor: Colors.amberAccent,
-          inactiveColor: Colors.amberAccent.withOpacity(0.5),
+        Container(
+          width: MediaQuery.of(context).size.width / 1.2,
+          child: Slider(
+            value: _sliderDefaultValue,
+            onChanged: (double val) {
+              setState(() {
+                _sliderDefaultValue = val;
+              });
+            },
+            min: 1,
+            max: 39,
+            activeColor: Colors.amberAccent,
+            inactiveColor: Colors.amberAccent.withOpacity(0.5),
+          ),
         ),
         SizedBox(height: 100),
       ],
@@ -157,22 +142,23 @@ class _CameraUIState extends State<CameraUI> {
         SizedBox(height: 16),
         Container(
           width: (MediaQuery.of(context).size.width - 48) / 2,
-          height: ((MediaQuery.of(context).size.width - 48) / 2) * (4 / 3),
-          // color: SGColors.,
-          child: Image.asset(
-            // 'assets/image/men1.jpg',
-
-            'assets/image/ready/1.png',
-            fit: BoxFit.cover,
-            // alignment: Alignment.bottomCenter,
-          ),
+          height: ((MediaQuery.of(context).size.width - 48) / 2), // * (4 / 3),
+          child: _croppedMenImageFile == null
+              ? Image.asset(
+                  'assets/image/ready/1.png',
+                  fit: BoxFit.cover,
+                )
+              : Image.file(
+                  _croppedMenImageFile!,
+                  fit: BoxFit.cover,
+                ),
         ),
-        SizedBox(height: 36),
+        SizedBox(height: 16),
         MaterialButton(
           color: Colors.amberAccent,
           child: Text('Men'),
           onPressed: () {
-            _showProfileUploadBottomSheet(context);
+            _showProfileUploadBottomSheet(men: true);
           },
         ),
       ],
@@ -185,20 +171,25 @@ class _CameraUIState extends State<CameraUI> {
         SizedBox(height: 16),
         Container(
           width: (MediaQuery.of(context).size.width - 48) / 2,
-          height: ((MediaQuery.of(context).size.width - 48) / 2) * (4 / 3),
+          height: ((MediaQuery.of(context).size.width - 48) / 2), // * (4 / 3),
           // color: SGColors.,
-          child: Image.asset(
-            // 'assets/image/pet1.jpg',
-            'assets/image/ready/2.jpg',
-            fit: BoxFit.cover,
-            // alignment: Alignment.bottomCenter,
-          ),
+          child: _croppedPetImageFile == null
+              ? Image.asset(
+                  'assets/image/ready/pet.jpg',
+                  fit: BoxFit.cover,
+                )
+              : Image.file(
+                  _croppedPetImageFile!,
+                  fit: BoxFit.cover,
+                ),
         ),
-        SizedBox(height: 36),
+        SizedBox(height: 16),
         MaterialButton(
           color: Colors.amberAccent,
           child: Text('Pet'),
-          onPressed: () {},
+          onPressed: () {
+            _showProfileUploadBottomSheet(men: false);
+          },
         ),
       ],
     );
@@ -210,7 +201,7 @@ class _CameraUIState extends State<CameraUI> {
         top: 8,
         bottom: 8,
       ),
-      height: 48,
+      height: 56,
       // width: MediaQuery.of(context).size.width / 2,
       decoration: BoxDecoration(
         color: Colors.amberAccent,
@@ -227,18 +218,120 @@ class _CameraUIState extends State<CameraUI> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: const <Widget>[
-            Text('Morph it',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 24)),
+            Text(
+              'Morph it',
+              style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 24),
+            ),
           ],
         ),
       ),
     );
   }
 
-  dynamic _showProfileUploadBottomSheet(BuildContext context) {
+  Future<void> _takeFromGallery({required bool men}) async {
+    final ImagePicker _picker = ImagePicker();
+    String? _path;
+    if (men) {
+      _manImageFile = await _picker.pickImage(source: ImageSource.gallery);
+      _path = _manImageFile?.path;
+    } else {
+      _petImageFile = await _picker.pickImage(source: ImageSource.gallery);
+      _path = _petImageFile?.path;
+    }
+    _tempCropped = null;
+    if (_path != null) {
+      _tempCropped = await ImageCropper.cropImage(
+        sourcePath: men ? _manImageFile!.path : _petImageFile!.path,
+        aspectRatioPresets: [
+          CropAspectRatioPreset.square,
+        ],
+        androidUiSettings: AndroidUiSettings(
+            toolbarTitle: 'Try To Focus Face',
+            toolbarColor: Colors.amberAccent,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: false),
+        aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+        cropStyle: CropStyle.circle,
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 100,
+        maxHeight: 512,
+        maxWidth: 512,
+        iosUiSettings: IOSUiSettings(
+          title: 'Try To Focus Face',
+          minimumAspectRatio: 1.0,
+        ),
+      );
+    }
+    if (_tempCropped != null) {
+      if (men) {
+        _croppedMenImageFile = _tempCropped;
+      } else {
+        _croppedPetImageFile = _tempCropped;
+      }
+    }
+    setState(() {});
+    Navigator.of(context).pop();
+  }
+
+  Future<void> _cropImage({required bool men}) async {
+    if (men && _croppedMenImageFile == null) {
+      return;
+    }
+    if (!men && _croppedPetImageFile == null) {
+      return;
+    }
+    _tempCropped = null;
+    if (men && _croppedMenImageFile != null) {
+      _tempCropped = await ImageCropper.cropImage(
+        sourcePath:
+            men ? _croppedMenImageFile!.path : _croppedPetImageFile!.path,
+        aspectRatioPresets: [
+          CropAspectRatioPreset.square,
+        ],
+        androidUiSettings: AndroidUiSettings(
+            toolbarTitle: 'Try To Focus Face',
+            toolbarColor: Colors.amberAccent,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: false),
+        aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+        cropStyle: CropStyle.circle,
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 100,
+        maxHeight: 512,
+        maxWidth: 512,
+        iosUiSettings: IOSUiSettings(
+          title: 'Try To Focus Face',
+          minimumAspectRatio: 1.0,
+        ),
+      );
+    }
+    if (_tempCropped != null) {
+      if (men) {
+        _croppedMenImageFile = _tempCropped;
+      } else {
+        _croppedPetImageFile = _tempCropped;
+      }
+    }
+    setState(() {});
+    Navigator.of(context).pop();
+  }
+
+  Future<void> _removeProfilePhoto({required bool men}) async {
+    if (men) {
+      _croppedMenImageFile = null;
+    } else {
+      _croppedPetImageFile = null;
+    }
+    setState(() {});
+    Navigator.of(context).pop();
+  }
+
+  dynamic _showProfileUploadBottomSheet({required bool men}) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -251,7 +344,7 @@ class _CameraUIState extends State<CameraUI> {
         margin: const EdgeInsets.only(
           top: 36,
         ),
-        height: 236, // _bloc!.isUserHasPhoto ? 236 : 180,
+        height: 290 + MediaQuery.of(context).padding.bottom,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -272,7 +365,7 @@ class _CameraUIState extends State<CameraUI> {
             ),
             MaterialButton(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              onPressed: () => getCameraImage(context),
+              onPressed: () => null,
               child: Container(
                 height: 48,
                 child: Row(
@@ -289,7 +382,7 @@ class _CameraUIState extends State<CameraUI> {
               ),
             ),
             MaterialButton(
-              onPressed: () => getGalleyImage(context),
+              onPressed: () => _takeFromGallery(men: men),
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Container(
                 height: 48,
@@ -305,10 +398,26 @@ class _CameraUIState extends State<CameraUI> {
                 ),
               ),
             ),
+            MaterialButton(
+              onPressed: () => _cropImage(men: men),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Container(
+                height: 48,
+                child: Row(
+                  children: <Widget>[
+                    const Padding(
+                      padding: EdgeInsets.only(left: 20),
+                      child: Text(
+                        '• Crop Image',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             Visibility(
-              // visible: !_bloc!.isPlaceholderAvatar!,
               child: MaterialButton(
-                onPressed: () {}, // => _removeProfilePhoto(context),
+                onPressed: () => _removeProfilePhoto(men: men),
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Container(
                   height: 48,
@@ -318,7 +427,6 @@ class _CameraUIState extends State<CameraUI> {
                         padding: EdgeInsets.only(left: 20),
                         child: Text(
                           '• Remove photo',
-                          // style: SGTextStyles.pro16dark,
                         ),
                       ),
                     ],
@@ -332,72 +440,33 @@ class _CameraUIState extends State<CameraUI> {
     );
   }
 
-  Future<void> getGalleyImage(BuildContext context) async {
-    if (Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
-    }
+  //   final PickedFile? pickedFile =
+  //       await _picker.getImage(source: ImageSource.camera);
+  //   _userSelectedImage = File(pickedFile!.path);
+  //   _croppedImageFile = null;
+  //   _croppedImageFile = await ImageCropper.cropImage(
+  //     sourcePath: _userSelectedImage!.path,
+  //     aspectRatioPresets: [
+  //       CropAspectRatioPreset.square,
+  //     ],
+  //     androidUiSettings: AndroidUiSettings(
+  //         toolbarTitle: 'Adjust Image',
+  //         toolbarColor: Colors.amberAccent,
+  //         toolbarWidgetColor: Colors.white,
+  //         initAspectRatio: CropAspectRatioPreset.square,
+  //         lockAspectRatio: false),
+  //     aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+  //     cropStyle: CropStyle.circle,
+  //     compressFormat: ImageCompressFormat.jpg,
+  //     compressQuality: 100,
+  //     maxHeight: 512,
+  //     maxWidth: 512,
+  //     iosUiSettings: IOSUiSettings(
+  //       title: 'Adjust Image',
+  //       minimumAspectRatio: 1.0,
+  //     ),
+  //   );
 
-    final PickedFile? pickedFile =
-        await _picker.getImage(source: ImageSource.gallery);
-    _userSelectedImage = File(pickedFile!.path);
-    _croppedImageFile = null;
-    _croppedImageFile = await ImageCropper.cropImage(
-      sourcePath: _userSelectedImage!.path,
-      aspectRatioPresets: [
-        CropAspectRatioPreset.square,
-      ],
-      androidUiSettings: AndroidUiSettings(
-          toolbarTitle: 'Adjust Image',
-          toolbarColor: Colors.amberAccent,
-          toolbarWidgetColor: Colors.white,
-          initAspectRatio: CropAspectRatioPreset.square,
-          lockAspectRatio: false),
-      aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
-      cropStyle: CropStyle.circle,
-      compressFormat: ImageCompressFormat.jpg,
-      compressQuality: 100,
-      maxHeight: 512,
-      maxWidth: 512,
-      iosUiSettings: IOSUiSettings(
-        title: 'Adjust Image',
-        minimumAspectRatio: 1.0,
-      ),
-    );
-    // if (_croppedImageFile != null) _bloc!.setProfilePhoto(_croppedImageFile!);
-  }
-
-  Future<void> getCameraImage(BuildContext context) async {
-    if (Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
-    }
-
-    final PickedFile? pickedFile =
-        await _picker.getImage(source: ImageSource.camera);
-    _userSelectedImage = File(pickedFile!.path);
-    _croppedImageFile = null;
-    _croppedImageFile = await ImageCropper.cropImage(
-      sourcePath: _userSelectedImage!.path,
-      aspectRatioPresets: [
-        CropAspectRatioPreset.square,
-      ],
-      androidUiSettings: AndroidUiSettings(
-          toolbarTitle: 'Adjust Image',
-          toolbarColor: Colors.amberAccent,
-          toolbarWidgetColor: Colors.white,
-          initAspectRatio: CropAspectRatioPreset.square,
-          lockAspectRatio: false),
-      aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
-      cropStyle: CropStyle.circle,
-      compressFormat: ImageCompressFormat.jpg,
-      compressQuality: 100,
-      maxHeight: 512,
-      maxWidth: 512,
-      iosUiSettings: IOSUiSettings(
-        title: 'Adjust Image',
-        minimumAspectRatio: 1.0,
-      ),
-    );
-
-    // if (_croppedImageFile != null) _bloc!.setProfilePhoto(_croppedImageFile!);
-  }
+  //   // if (_croppedImageFile != null) _bloc!.setProfilePhoto(_croppedImageFile!);
+  // }
 }

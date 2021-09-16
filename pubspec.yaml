@@ -31,9 +31,8 @@ dependencies:
   shared_preferences: ^2.0.7
   flutter_svg: ^0.22.0
 
-
   cupertino_icons: ^1.0.2
-  image_picker: ^0.7.2+1
+  image_picker: ^0.8.4+1
   image_cropper: ^1.4.1
 
 dev_dependencies:
