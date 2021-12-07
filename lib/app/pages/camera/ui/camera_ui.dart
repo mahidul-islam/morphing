@@ -18,9 +18,10 @@ class _CameraUIState extends State<CameraUI> {
   late CameraBloc _bloc;
   XFile? _manImageFile;
   XFile? _petImageFile;
+  int _menPercentage = 100;
 
   File? _croppedMenImageFile, _croppedPetImageFile, _tempCropped;
-  double _sliderDefaultValue = 5;
+  double _sliderDefaultValue = 1;
 
   @override
   void initState() {
@@ -116,12 +117,30 @@ class _CameraUIState extends State<CameraUI> {
         ),
         SizedBox(height: 16),
         Container(
+          width: MediaQuery.of(context).size.width,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              Text(
+                'Human: $_menPercentage%',
+                style: TextStyle(fontSize: 20, color: Colors.black),
+              ),
+              Text(
+                'Pet: ${100 - _menPercentage}%',
+                style: TextStyle(fontSize: 20, color: Colors.black),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 16),
+        Container(
           width: MediaQuery.of(context).size.width / 1.2,
           child: Slider(
             value: _sliderDefaultValue,
             onChanged: (double val) {
               setState(() {
                 _sliderDefaultValue = val;
+                _menPercentage = 100 - ((val / 39) * 100).toInt();
               });
             },
             min: 1,
@@ -277,6 +296,52 @@ class _CameraUIState extends State<CameraUI> {
     Navigator.of(context).pop();
   }
 
+  Future<void> _takeAPicture({required bool men}) async {
+    final ImagePicker _picker = ImagePicker();
+    String? _path;
+    if (men) {
+      _manImageFile = await _picker.pickImage(source: ImageSource.camera);
+      _path = _manImageFile?.path;
+    } else {
+      _petImageFile = await _picker.pickImage(source: ImageSource.camera);
+      _path = _petImageFile?.path;
+    }
+    _tempCropped = null;
+    if (_path != null) {
+      _tempCropped = await ImageCropper.cropImage(
+        sourcePath: men ? _manImageFile!.path : _petImageFile!.path,
+        aspectRatioPresets: [
+          CropAspectRatioPreset.square,
+        ],
+        androidUiSettings: AndroidUiSettings(
+            toolbarTitle: 'Try To Focus Face',
+            toolbarColor: Colors.amberAccent,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: false),
+        aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+        cropStyle: CropStyle.circle,
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 100,
+        maxHeight: 512,
+        maxWidth: 512,
+        iosUiSettings: IOSUiSettings(
+          title: 'Try To Focus Face',
+          minimumAspectRatio: 1.0,
+        ),
+      );
+    }
+    if (_tempCropped != null) {
+      if (men) {
+        _croppedMenImageFile = _tempCropped;
+      } else {
+        _croppedPetImageFile = _tempCropped;
+      }
+    }
+    setState(() {});
+    Navigator.of(context).pop();
+  }
+
   Future<void> _cropImage({required bool men}) async {
     if (men && _croppedMenImageFile == null) {
       return;
@@ -365,7 +430,7 @@ class _CameraUIState extends State<CameraUI> {
             ),
             MaterialButton(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              onPressed: () => null,
+              onPressed: () => _takeAPicture(men: men),
               child: Container(
                 height: 48,
                 child: Row(
@@ -439,34 +504,4 @@ class _CameraUIState extends State<CameraUI> {
       ),
     );
   }
-
-  //   final PickedFile? pickedFile =
-  //       await _picker.getImage(source: ImageSource.camera);
-  //   _userSelectedImage = File(pickedFile!.path);
-  //   _croppedImageFile = null;
-  //   _croppedImageFile = await ImageCropper.cropImage(
-  //     sourcePath: _userSelectedImage!.path,
-  //     aspectRatioPresets: [
-  //       CropAspectRatioPreset.square,
-  //     ],
-  //     androidUiSettings: AndroidUiSettings(
-  //         toolbarTitle: 'Adjust Image',
-  //         toolbarColor: Colors.amberAccent,
-  //         toolbarWidgetColor: Colors.white,
-  //         initAspectRatio: CropAspectRatioPreset.square,
-  //         lockAspectRatio: false),
-  //     aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
-  //     cropStyle: CropStyle.circle,
-  //     compressFormat: ImageCompressFormat.jpg,
-  //     compressQuality: 100,
-  //     maxHeight: 512,
-  //     maxWidth: 512,
-  //     iosUiSettings: IOSUiSettings(
-  //       title: 'Adjust Image',
-  //       minimumAspectRatio: 1.0,
-  //     ),
-  //   );
-
-  //   // if (_croppedImageFile != null) _bloc!.setProfilePhoto(_croppedImageFile!);
-  // }
 }
